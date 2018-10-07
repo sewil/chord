@@ -1,4 +1,4 @@
-﻿namespace chorus
+﻿namespace Chord
 {
     public class DirectLink
     {

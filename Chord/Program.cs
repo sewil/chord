@@ -7,7 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 
-namespace chorus
+namespace Chord
 {
     class Program
     {

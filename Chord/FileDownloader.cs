@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
-namespace chorus
+namespace Chord
 {
     public static class FileDownloader
     {

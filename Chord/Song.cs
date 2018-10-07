@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace chorus
+namespace Chord
 {
     public class Song
     {
