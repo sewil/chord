@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Google.Apis.Drive.v3;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 
 namespace Chord.Core.Util
@@ -44,63 +46,87 @@ namespace Chord.Core.Util
             }
         }
 
-        // Downloading large files from Google Drive prompts a warning screen and
-        // requires manual confirmation. Consider that case and try to confirm the download automatically
-        // if warning prompt occurs
         private static FileInfo DownloadGoogleDriveFileFromURLToPath(string url, string path)
         {
-            // You can comment the statement below if the provided url is guaranteed to be in the following format:
-            // https://drive.google.com/uc?id=FILEID&export=download
-            url = GetGoogleDriveDownloadLinkFromUrl(url);
-
-            using (CookieAwareWebClient webClient = new CookieAwareWebClient())
+            string folders = "drive/folders/";
+            if (url.IndexOf(folders) > 0)
             {
-                FileInfo downloadedFile;
-
-                // Sometimes Drive returns an NID cookie instead of a download_warning cookie at first attempt,
-                // but works in the second attempt
-                for (int i = 0; i < 2; i++)
+                int index = url.IndexOf(folders) + folders.Length;
+                string folderId = url.Substring(index, url.Length - index);
+                DriveService service = GoogleDriveUtil.Authorize();
+                var files = GoogleDriveUtil.ListFiles(service, folderId);
+                string tempSongsDirectory = Path.Combine(Path.GetTempPath(), "chord-songs");
+                if (!Directory.Exists(tempSongsDirectory))
                 {
-                    downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
-                    if (downloadedFile == null)
-                        return null;
+                    Directory.CreateDirectory(tempSongsDirectory);
+                }
+                foreach (var file in files)
+                {
+                    string fileUrl = "https://drive.google.com/uc?id=" + file.Id + "&export=download";
+                    string tempLocalFile = Path.Combine(tempSongsDirectory, file.Name);
+                    DownloadGoogleDriveFileFromURLToPath(fileUrl, tempLocalFile);
+                }
+                ZipFile.CreateFromDirectory(tempSongsDirectory, Path.Combine(Path.GetTempPath(), "chord-song.zip"));
+                Directory.Delete(tempSongsDirectory, true);
+                return null;
+            }
+            else
+            {
+                url = GetGoogleDriveDownloadLinkFromUrl(url);
+                using (CookieAwareWebClient webClient = new CookieAwareWebClient())
+                {
+                    FileInfo downloadedFile;
 
-                    // Confirmation page is around 50KB, shouldn't be larger than 60KB
-                    if (downloadedFile.Length > 60000)
-                        return downloadedFile;
-
-                    // Downloaded file might be the confirmation page, check it
-                    string content;
-                    using (var reader = downloadedFile.OpenText())
+                    for (int i = 0; i < 2; i++)
                     {
-                        // Confirmation page starts with <!DOCTYPE html>, which can be preceeded by a newline
-                        char[] header = new char[20];
-                        int readCount = reader.ReadBlock(header, 0, 20);
-                        if (readCount < 20 || !(new string(header).Contains("<!DOCTYPE html>")))
-                            return downloadedFile;
+                        downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
+                        if (downloadedFile == null)
+                        {
+                            return null;
+                        }
 
-                        content = reader.ReadToEnd();
+                        if (downloadedFile.Length > 60000)
+                        {
+                            return downloadedFile;
+                        }
+
+                        string content;
+                        using (var reader = downloadedFile.OpenText())
+                        {
+                            char[] header = new char[20];
+                            int readCount = reader.ReadBlock(header, 0, 20);
+                            if (readCount < 20 || !(new string(header).Contains("<!DOCTYPE html>")))
+                            {
+                                return downloadedFile;
+                            }
+
+                            content = reader.ReadToEnd();
+                        }
+
+                        int linkIndex = content.LastIndexOf("href=\"/uc?");
+                        if (linkIndex < 0)
+                        {
+                            return downloadedFile;
+                        }
+
+                        linkIndex += 6;
+                        int linkEnd = content.IndexOf('"', linkIndex);
+                        if (linkEnd < 0)
+                        {
+                            return downloadedFile;
+                        }
+
+                        url = "https://drive.google.com" + content.Substring(linkIndex, linkEnd - linkIndex).Replace("&amp;", "&");
                     }
 
-                    int linkIndex = content.LastIndexOf("href=\"/uc?");
-                    if (linkIndex < 0)
-                        return downloadedFile;
+                    downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
 
-                    linkIndex += 6;
-                    int linkEnd = content.IndexOf('"', linkIndex);
-                    if (linkEnd < 0)
-                        return downloadedFile;
-
-                    url = "https://drive.google.com" + content.Substring(linkIndex, linkEnd - linkIndex).Replace("&amp;", "&");
+                    return downloadedFile;
                 }
-
-                downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
-
-                return downloadedFile;
             }
         }
 
-        // Handles 3 kinds of links (they can be preceeded by https://):
+        // Handles 4 kinds of links (they can be preceeded by https://):
         // - drive.google.com/open?id=FILEID
         // - drive.google.com/file/d/FILEID/view?usp=sharing
         // - drive.google.com/uc?id=FILEID&export=download
