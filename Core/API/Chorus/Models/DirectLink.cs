@@ -1,4 +1,4 @@
-﻿namespace Chord
+﻿namespace Chord.Core.API.Chorus.Models
 {
     public class DirectLink
     {

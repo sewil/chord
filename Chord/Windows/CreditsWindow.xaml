@@ -1,0 +1,27 @@
+﻿<Window x:Class="Chord.Windows.CreditsWindow"
+        WindowStartupLocation="CenterOwner"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Chord.Windows"
+        mc:Ignorable="d"
+        Title="Credits" Height="120" Width="350">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0">Author:</Label>
+        <TextBlock Margin="5" Grid.Row="0" Grid.Column="1"><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/sewil">Sewil</Hyperlink></TextBlock>
+        <Label Grid.Row="1" Grid.Column="0">App icon:</Label>
+        <TextBlock Margin="5" Grid.Row="1" Grid.Column="1"><Hyperlink RequestNavigate="Hyperlink_RequestNavigate"  NavigateUri="http://www.freepik.com">Freepik</Hyperlink> from www.flaticon.com</TextBlock>
+        <Label Grid.Row="2" Grid.Column="0">GitHub icon:</Label>
+        <TextBlock Margin="5" Grid.Row="2" Grid.Column="1"><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://www.flaticon.com/authors/dave-gandy">Dave Gandy</Hyperlink> from www.flaticon.com</TextBlock>
+    </Grid>
+</Window>

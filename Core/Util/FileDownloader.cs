@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
-namespace Chord
+namespace Chord.Core.Util
 {
     public static class FileDownloader
     {
@@ -119,7 +119,7 @@ namespace Chord
             {
                 index = url.IndexOf("file/d/");
                 if (index < 0) // url is not in any of the supported forms
-                    return string.Empty;
+                    throw new ArgumentException("Invalid URL specified.");
 
                 index += 7;
 

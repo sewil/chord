@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Chord
+namespace Chord.Core.API.Chorus.Models
 {
-    public class Search
+    public class SearchResult
     {
         public IDictionary<string, string> roles;
         public IList<Song> songs;
