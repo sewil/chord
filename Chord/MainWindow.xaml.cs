@@ -189,5 +189,10 @@ namespace Chord
                 Task.Run(() => Dispatcher.Invoke(() => ScanSongs()));
             }
         }
+
+        private void ShowInExplorerButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(SongsDirectory.Text);
+        }
     }
 }
