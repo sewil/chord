@@ -3,10 +3,6 @@ using Chord.Core.API.Chorus.Models;
 using Chord.Properties;
 using Chord.Views;
 using Chord.Windows;
-using IniParser;
-using IniParser.Model;
-using IniParser.Model.Configuration;
-using IniParser.Parser;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -26,13 +22,7 @@ namespace Chord
     /// </summary>
     public partial class MainWindow : Window
     {
-        static IniDataParser iniParser = new IniDataParser(new IniParserConfiguration
-        {
-            CaseInsensitive = true,
-            AllowDuplicateKeys = true,
-            SkipInvalidLines = true
-        });
-        FileIniDataParser fileIniParser = new FileIniDataParser(iniParser);
+        string selectedNode;
 
         public MainWindow()
         {
@@ -93,31 +83,40 @@ namespace Chord
             }
         }
 
-        private SongDirectoryTreeViewItem ScanDirectory(string directory)
+        private SongNodeTreeViewItem ScanDirectory(string directory)
         {
-            SongDirectoryTreeViewItem treeViewItem = new SongDirectoryTreeViewItem(this, directory);
+            SongNodeTreeViewItem treeViewItem = new SongNodeTreeViewItem(this, directory, NodeType.Directory);
             string[] files = Directory.GetFiles(directory);
 
             foreach (string file in files)
             {
-                FileInfo fileInfo = new FileInfo(file);
-                if (fileInfo.Name == "song" && fileInfo.Extension == ".ini")
-                {
-                    KeyDataCollection iniData = fileIniParser.ReadFile(directory)["song"];
-                    string name = iniData["artist"] + " - " + iniData["name"];
-                }
-
-                treeViewItem.Items.Add(new SongFileTreeViewItem(this, file));
+                treeViewItem.Items.Add(new SongNodeTreeViewItem(this, file, NodeType.File));
             }
 
             string[] subDirectories = Directory.GetDirectories(directory);
             foreach (string subDirectory in subDirectories)
             {
-                SongDirectoryTreeViewItem subTreeViewItem = ScanDirectory(subDirectory);
+                SongNodeTreeViewItem subTreeViewItem = ScanDirectory(subDirectory);
+                if (subTreeViewItem.IsExpanded)
+                {
+                    treeViewItem.IsExpanded = true;
+                }
                 treeViewItem.Items.Add(subTreeViewItem);
             }
 
+            treeViewItem.Expanded += SongNodeTreeViewItem_Expanded;
+
+            if (treeViewItem.Identifier == selectedNode)
+            {
+                treeViewItem.IsExpanded = true;
+            }
+
             return treeViewItem;
+        }
+
+        private void SongNodeTreeViewItem_Expanded(object sender, RoutedEventArgs e)
+        {
+            selectedNode = ((SongNodeTreeViewItem)e.OriginalSource).Identifier;
         }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)

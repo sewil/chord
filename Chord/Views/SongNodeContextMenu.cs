@@ -4,20 +4,10 @@ namespace Chord.Views
 {
     class SongNodeContextMenu : ContextMenu
     {
-        public delegate void EmptyEventHandler();
-        public event EmptyEventHandler Delete;
-
         public SongNodeContextMenu()
         {
-            Items.Add(new MenuItem { Header = "Delete" });
-            PreviewMouseLeftButtonUp += (obj, args) =>
-            {
-                MenuItem menuItem = (MenuItem)args.Source;
-                if (menuItem.Header.ToString() == "Delete")
-                {
-                    Delete.Invoke();
-                }
-            };
+            Items.Add(new MenuItem { Header = "Rename song", Name = "renameSong" });
+            Items.Add(new MenuItem { Header = "Delete", Name = "delete" });
         }
     }
 }

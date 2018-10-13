@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace Chord.Core.Util
 {
@@ -17,8 +18,18 @@ namespace Chord.Core.Util
 
         public static void MoveZipToSongsFolder(string songsDirectory, string artist, string name, string charter, string zip, Action<string> status)
         {
+            name = FileCleanString(name);
+            artist = FileCleanString(artist);
+            charter = FileCleanString(charter);
             UnarchiveZip(zip, Path.Combine(songsDirectory, artist + " - " + name + " (" + charter + ")"), status);
             RemoveZip(zip, status);
+        }
+
+        private static string FileCleanString(string value)
+        {
+            string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
+            string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
+            return Regex.Replace(value, invalidRegStr, "_");
         }
 
         public static void RemoveZip(string zip, Action<string> status)

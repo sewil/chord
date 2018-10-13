@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using IniParser;
+using IniParser.Model.Configuration;
+using IniParser.Parser;
 using System.Windows;
 
 namespace Chord
@@ -13,5 +10,12 @@ namespace Chord
     /// </summary>
     public partial class App : Application
     {
+        private static IniDataParser iniParser = new IniDataParser(new IniParserConfiguration
+        {
+            CaseInsensitive = true,
+            AllowDuplicateKeys = true,
+            SkipInvalidLines = true
+        });
+        internal static FileIniDataParser fileIniParser = new FileIniDataParser(iniParser);
     }
 }

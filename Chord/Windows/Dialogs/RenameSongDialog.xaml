@@ -1,0 +1,24 @@
+﻿<Window x:Class="Chord.Windows.Dialogs.RenameSongDialog"
+        WindowStartupLocation="CenterOwner"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Rename song" Height="140" Width="180">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0" Text="Enter new song name:" />
+        <TextBox Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Name="SongNameTextBox" />
+        <Button Grid.Row="2" Grid.Column="0" Margin="5" Content="Rename" Name="RenameButton" />
+        <Button Grid.Row="2" Grid.Column="1" Margin="5" Content="Cancel" Name="CancelButton" Click="CancelButton_Click" />
+    </Grid>
+</Window>
