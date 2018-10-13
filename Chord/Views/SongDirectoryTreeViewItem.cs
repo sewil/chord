@@ -14,8 +14,15 @@ namespace Chord.Views
             var contextMenu = new SongNodeContextMenu();
             contextMenu.Delete += () =>
             {
-                directoryInfo.Delete(true);
-                Task.Run(() => Dispatcher.Invoke(() => mainWindow.ScanSongs()));
+                try
+                {
+                    directoryInfo.Delete(true);
+                    Task.Run(() => Dispatcher.Invoke(() => mainWindow.ScanSongs()));
+                }
+                catch (IOException exception)
+                {
+                    MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             };
             PreviewMouseRightButtonDown += (sender, e) =>
             {
