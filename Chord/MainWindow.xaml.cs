@@ -51,6 +51,7 @@ namespace Chord
                 CreditsWindow window = new CreditsWindow();
                 window.Show();
             };
+            GamePathTextBox.Text = Settings.Default.GamePath;
             APIComboBox.Items.Add(new APIComboBoxItem(APIType.Chorus, "Chorus") { IsSelected = true });
             if (!string.IsNullOrWhiteSpace(Settings.Default.SongsDirectory))
             {
@@ -193,6 +194,17 @@ namespace Chord
         private void ShowInExplorerButton_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(SongsDirectory.Text);
+        }
+
+        private void OpenGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(GamePathTextBox.Text);
+        }
+
+        private void GamePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Settings.Default.GamePath = GamePathTextBox.Text;
+            Settings.Default.Save();
         }
     }
 }

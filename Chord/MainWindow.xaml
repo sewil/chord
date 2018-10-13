@@ -17,7 +17,8 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0" Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -26,11 +27,14 @@
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" Name="SongsDirectoryLabel" VerticalAlignment="Center">Song directory:</Label>
-            <Button Grid.Row="1" Grid.Column="1" Margin="5" Padding="5" Click="ShowInExplorerButton_Click">Open in Explorer</Button>
-            <TextBox Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Name="SongsDirectory" KeyUp="SongsDirectoryTextBox_KeyUp"></TextBox>
-            <Label Grid.ColumnSpan="2" Grid.Row="2" Visibility="Collapsed" FontSize="24" Margin="0,10,0,0" Foreground="Gray" HorizontalAlignment="Center" Name="SongListPlaceholderLabel">Song directory not set.</Label>
-            <TreeView Grid.ColumnSpan="2" Grid.Row="3" Name="SongList"></TreeView>
+            <Label Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center">Game path:</Label>
+            <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Name="GamePathTextBox" TextChanged="GamePathTextBox_TextChanged"></TextBox>
+            <Button Grid.Row="0" Grid.Column="2" Margin="5" Click="OpenGameButton_Click">Open game</Button>
+            <Label Grid.Row="1" Grid.Column="0" Name="SongsDirectoryLabel" VerticalAlignment="Center">Song directory:</Label>
+            <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Name="SongsDirectory" KeyUp="SongsDirectoryTextBox_KeyUp"></TextBox>
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" Click="ShowInExplorerButton_Click">Open in Explorer</Button>
+            <Label Grid.ColumnSpan="3" Grid.Row="2" Visibility="Collapsed" FontSize="24" Margin="0,10,0,0" Foreground="Gray" HorizontalAlignment="Center" Name="SongListPlaceholderLabel">Song directory not set.</Label>
+            <TreeView Grid.ColumnSpan="3" Grid.Row="3" Name="SongList"></TreeView>
         </Grid>
         <Grid Grid.Column="1" Grid.Row="0">
             <Grid.RowDefinitions>
