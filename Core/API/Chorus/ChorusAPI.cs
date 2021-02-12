@@ -19,6 +19,9 @@ namespace Chord.Core.API.Chorus
         {
             using (var client = new WebClient())
             {
+                ServicePointManager.Expect100Continue = true;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
                 string responseString = client.DownloadString(API_URL + endpoint);
                 TResult result = JsonConvert.DeserializeObject<TResult>(responseString);
                 return result;
