@@ -11,9 +11,9 @@ namespace Chord.Core.Util
     {
         public static void DownloadSong(string songsDirectory, string link, string artist, string name, string charter, Action<string> status)
         {
-            string zip = Path.GetTempPath() + "chord-song.zip";
-            FileDownloader.DownloadFileFromURLToPath(link, zip);
-            MoveZipToSongsFolder(songsDirectory, artist, name, charter, zip, status);
+            string path = Path.Combine(Path.GetTempPath(), "chord-song.zip");
+            FileInfo zip = FileDownloader.DownloadFileFromURLToPath(link, path);
+            MoveZipToSongsFolder(songsDirectory, artist, name, charter, zip.FullName, status);
         }
 
         public static void MoveZipToSongsFolder(string songsDirectory, string artist, string name, string charter, string zip, Action<string> status)

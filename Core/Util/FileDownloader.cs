@@ -24,25 +24,18 @@ namespace Chord.Core.Util
 
         private static FileInfo DownloadFileFromURLToPath(string url, string path, WebClient webClient)
         {
-            try
+            if (webClient == null)
             {
-                if (webClient == null)
-                {
-                    using (webClient = new WebClient())
-                    {
-                        webClient.DownloadFile(url, path);
-                        return new FileInfo(path);
-                    }
-                }
-                else
+                using (webClient = new WebClient())
                 {
                     webClient.DownloadFile(url, path);
                     return new FileInfo(path);
                 }
             }
-            catch (WebException)
+            else
             {
-                return null;
+                webClient.DownloadFile(url, path);
+                return new FileInfo(path);
             }
         }
 
@@ -84,10 +77,6 @@ namespace Chord.Core.Util
                     for (int i = 0; i < 2; i++)
                     {
                         downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
-                        if (downloadedFile == null)
-                        {
-                            return null;
-                        }
 
                         if (downloadedFile.Length > 60000)
                         {
@@ -208,6 +197,7 @@ namespace Chord.Core.Util
 
             if (request is HttpWebRequest)
             {
+                ((HttpWebRequest)request).UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
                 string cookie = cookies[address];
                 if (cookie != null)
                     ((HttpWebRequest)request).Headers.Set("cookie", cookie);
