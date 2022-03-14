@@ -21,12 +21,13 @@ namespace Chord.Core.Util
             name = FileCleanString(name);
             artist = FileCleanString(artist);
             charter = FileCleanString(charter);
-            UnarchiveZip(zip, Path.Combine(songsDirectory, artist + " - " + name + " (" + charter + ")"), status);
+            UnarchiveZip(zip, Path.Combine(songsDirectory, artist + " - " + name + (!string.IsNullOrWhiteSpace(charter) ? " (" + charter + ")" : "")), status);
             RemoveZip(zip, status);
         }
 
         private static string FileCleanString(string value)
         {
+            if (value == null) return null;
             string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
             string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
             return Regex.Replace(value, invalidRegStr, "_");
