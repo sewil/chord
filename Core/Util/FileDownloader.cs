@@ -66,9 +66,13 @@ namespace Chord.Core.Util
                     string tempLocalFile = Path.Combine(tempSongsDirectory, file.Name);
                     DownloadGoogleDriveFileFromURLToPath(fileUrl, tempLocalFile);
                 }
-                ZipFile.CreateFromDirectory(tempSongsDirectory, Path.Combine(Path.GetTempPath(), "chord-song.zip"));
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+                ZipFile.CreateFromDirectory(tempSongsDirectory, path);
                 Directory.Delete(tempSongsDirectory, true);
-                return null;
+                return new FileInfo(path);
             }
             else
             {
