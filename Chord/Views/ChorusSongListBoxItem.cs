@@ -3,6 +3,7 @@ using Chord.Core.Util;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,12 +36,21 @@ namespace Chord.Views
                         Dispatcher.Invoke(() => MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error));
                         downloadFailed = true;
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        string message;
+                        if (e is WebException)
+                        {
+                            message = e.InnerException?.Message ?? e.Message;
+                        }
+                        else
+                        {
+                            message = "Link could not be downloaded.";
+                        }
                         downloadFailed = true;
                         Dispatcher.Invoke(() =>
                         {
-                            var result = MessageBox.Show("Link could not be downloaded. Open in browser instead?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                            var result = MessageBox.Show(string.Format("{0} Open in browser instead?", message), "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                             if (result == MessageBoxResult.Yes)
                             {
                                 Process.Start(link);

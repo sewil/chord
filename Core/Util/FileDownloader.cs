@@ -225,19 +225,55 @@ namespace Chord.Core.Util
 
         protected override WebResponse GetWebResponse(WebRequest request)
         {
-            WebResponse response = base.GetWebResponse(request);
-
-            string[] cookies = response.Headers.GetValues("Set-Cookie");
-            if (cookies != null && cookies.Length > 0)
+            try
             {
-                string cookie = "";
-                foreach (string c in cookies)
-                    cookie += c;
+                WebResponse response = base.GetWebResponse(request);
+                string[] cookies = response.Headers.GetValues("Set-Cookie");
+                if (cookies != null && cookies.Length > 0)
+                {
+                    string cookie = "";
+                    foreach (string c in cookies)
+                        cookie += c;
 
-                this.cookies[response.ResponseUri] = cookie;
+                    this.cookies[response.ResponseUri] = cookie;
+                }
+
+                return response;
             }
-
-            return response;
+            catch (WebException exception)
+            {
+                if (exception.Response == null || !exception.Response.ContentType.Contains("application/json")) throw;
+                // Is JSON response, check for drive api error
+                using (var stream = exception.Response.GetResponseStream())
+                using (var reader = new StreamReader(stream))
+                {
+                    string json = reader.ReadToEnd();
+                    try
+                    {
+                        DriveAPIError driveErr = JsonConvert.DeserializeObject<DriveAPIError>(json);
+                        throw new Exception(driveErr.error.message);
+                    }
+                    catch (JsonSerializationException) { throw; }
+                }
+            }
         }
     }
+}
+
+public struct DriveAPIError
+{
+    public struct Error
+    {
+        public struct Errors
+        {
+            public string domain;
+            public string reason;
+            public string message;
+            public string extendedHelp;
+        }
+        public Errors[] errors;
+        public int code;
+        public string message;
+    }
+    public Error error;
 }
