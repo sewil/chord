@@ -11,8 +11,7 @@ namespace Chord.Core.Util
     {
         public static void DownloadSong(string songsDirectory, string link, string artist, string name, string charter, Action<string> status)
         {
-            string path = Path.Combine(Path.GetTempPath(), "chord-song.zip");
-            FileInfo zip = FileDownloader.DownloadFileFromURLToPath(link, path);
+            FileInfo zip = FileDownloader.DownloadFile(link);
             MoveZipToSongsFolder(songsDirectory, artist, name, charter, zip.FullName, status);
         }
 
@@ -53,18 +52,44 @@ namespace Chord.Core.Util
             catch
             {
                 status.Invoke("System extraction failed, trying WinRAR...");
-                try
+                WinrarExtract(zip, toDirectory, status, true);
+            }
+        }
+        private static void WinrarExtract(string zip, string toDirectory, Action<string> status, bool unrar)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(zip);
+                Process process = new Process
                 {
-                    Process process = new Process();
-                    process.StartInfo.FileName = "unrar";
-                    process.StartInfo.Arguments = "x \"" + zip + "\" \"" + toDirectory + "\"";
-                    process.Start();
-                    process.WaitForExit();
-                }
-                catch (Win32Exception)
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = unrar ? "unrar.exe" : "winrar.exe",
+                        Arguments = "x \"" + zip + "\" \"" + toDirectory + "\"",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                process.WaitForExit();
+                string output = process.StandardOutput.ReadToEnd();
+                if (output.Contains("No files to extract"))
                 {
-                    throw new Win32Exception("Error extracting archive. Make sure WinRAR is installed and added to PATH.");
+                    if (unrar)
+                    {
+                        status.Invoke("unrar.exe extraction failed. Trying winrar.exe...");
+                        WinrarExtract(zip, toDirectory, status, false);
+                    }
+                    else
+                    {
+                        throw new Win32Exception(string.Format("Error extracting archive with extension \"{0}\".", fileInfo.Extension));
+                    }
                 }
+            }
+            catch (Win32Exception) // unrar.exe or winrar.exe not found
+            {
+                throw new Win32Exception("Error extracting archive. Make sure WinRAR is installed and added to PATH.");
             }
         }
     }

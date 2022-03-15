@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using Newtonsoft.Json;
 
 namespace Chord.Core.Util
 {
@@ -14,16 +15,18 @@ namespace Chord.Core.Util
 
         // Normal example: FileDownloader.DownloadFileFromURLToPath( "http://example.com/file/download/link", @"C:\file.txt" );
         // Drive example: FileDownloader.DownloadFileFromURLToPath( "http://drive.google.com/file/d/FILEID/view?usp=sharing", @"C:\file.txt" );
-        public static FileInfo DownloadFileFromURLToPath(string url, string path)
+        public static FileInfo DownloadFile(string url)
         {
             if (url.StartsWith(GOOGLE_DRIVE_DOMAIN) || url.StartsWith(GOOGLE_DRIVE_DOMAIN2))
-                return DownloadGoogleDriveFileFromURLToPath(url, path);
+                return DownloadFromDrive(url);
             else
-                return DownloadFileFromURLToPath(url, path, null);
+                return DownloadDirect(url, null);
         }
 
-        private static FileInfo DownloadFileFromURLToPath(string url, string path, WebClient webClient)
+        private static FileInfo DownloadDirect(string url, WebClient webClient)
         {
+            // What if it's 7z?
+            string path = Path.Combine(Path.GetTempPath(), "chord-song.zip");
             if (webClient == null)
             {
                 using (webClient = new WebClient())
@@ -39,14 +42,14 @@ namespace Chord.Core.Util
             }
         }
 
-        private static FileInfo DownloadGoogleDriveFileFromURLToPath(string url, string path)
+        private static FileInfo DownloadFromDrive(string url)
         {
             string folders = "drive/folders/";
             if (url.IndexOf(folders) > 0)
             {
                 int index = url.IndexOf(folders) + folders.Length;
                 string folderId = url.Substring(index, url.Length - index);
-                DriveService service = GoogleDriveUtil.Authorize();
+                DriveService service = GoogleDriveUtil.GetService();
                 var files = GoogleDriveUtil.ListFiles(service, folderId);
                 string tempSongsDirectory = Path.Combine(Path.GetTempPath(), "chord-songs");
                 if (!Directory.Exists(tempSongsDirectory))
@@ -55,10 +58,10 @@ namespace Chord.Core.Util
                 }
                 foreach (var file in files)
                 {
-                    string fileUrl = "https://drive.google.com/uc?id=" + file.Id + "&export=download";
                     string tempLocalFile = Path.Combine(tempSongsDirectory, file.Name);
-                    DownloadGoogleDriveFileFromURLToPath(fileUrl, tempLocalFile);
+                    GoogleDriveUtil.DownloadFile(service, file.Id, tempLocalFile);
                 }
+                var path = Path.Combine(Path.GetTempPath(), "chord-song.zip");
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -69,53 +72,12 @@ namespace Chord.Core.Util
             }
             else
             {
-                url = GetGoogleDriveDownloadLinkFromUrl(url);
-                using (CookieAwareWebClient webClient = new CookieAwareWebClient())
-                {
-                    FileInfo downloadedFile;
-
-                    for (int i = 0; i < 2; i++)
-                    {
-                        downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
-
-                        if (downloadedFile.Length > 60000)
-                        {
-                            return downloadedFile;
-                        }
-
-                        string content;
-                        using (var reader = downloadedFile.OpenText())
-                        {
-                            char[] header = new char[20];
-                            int readCount = reader.ReadBlock(header, 0, 20);
-                            if (readCount < 20 || !(new string(header).Contains("<!DOCTYPE html>")))
-                            {
-                                return downloadedFile;
-                            }
-
-                            content = reader.ReadToEnd();
-                        }
-
-                        int linkIndex = content.LastIndexOf("href=\"/uc?");
-                        if (linkIndex < 0)
-                        {
-                            return downloadedFile;
-                        }
-
-                        linkIndex += 6;
-                        int linkEnd = content.IndexOf('"', linkIndex);
-                        if (linkEnd < 0)
-                        {
-                            return downloadedFile;
-                        }
-
-                        url = "https://drive.google.com" + content.Substring(linkIndex, linkEnd - linkIndex).Replace("&amp;", "&");
-                    }
-
-                    downloadedFile = DownloadFileFromURLToPath(url, path, webClient);
-
-                    return downloadedFile;
-                }
+                string fileId = GetDriveFileId(url);
+                var service = GoogleDriveUtil.GetService();
+                var file = GoogleDriveUtil.GetFile(service, fileId, out FilesResource.GetRequest getRequest);
+                var path = Path.Combine(Path.GetTempPath(), "chord-song" + Path.GetExtension(file.Name));
+                GoogleDriveUtil.DownloadFile(getRequest, path);
+                return new FileInfo(path);
             }
         }
 
@@ -123,7 +85,7 @@ namespace Chord.Core.Util
         // - drive.google.com/open?id=FILEID
         // - drive.google.com/file/d/FILEID/view?usp=sharing
         // - drive.google.com/uc?id=FILEID&export=download
-        public static string GetGoogleDriveDownloadLinkFromUrl(string url)
+        public static string GetDriveFileId(string url)
         {
             int index = url.IndexOf("id=");
             int closingIndex;
@@ -151,7 +113,7 @@ namespace Chord.Core.Util
                 }
             }
 
-            return string.Format("https://drive.google.com/uc?id={0}&export=download", url.Substring(index, closingIndex - index));
+            return url.Substring(index, closingIndex - index);
         }
     }
 
