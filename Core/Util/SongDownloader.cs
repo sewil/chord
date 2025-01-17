@@ -11,17 +11,29 @@ namespace Chord.Core.Util
     {
         public static void DownloadSong(string songsDirectory, string link, string artist, string name, string charter, Action<string> status)
         {
-            FileInfo zip = FileDownloader.DownloadFile(link);
-            MoveZipToSongsFolder(songsDirectory, artist, name, charter, zip.FullName, status);
-        }
+            FileInfo file = FileDownloader.DownloadFile(link);
+            var fileType = FileTypeDetector.DetectFileType(file.FullName);
 
-        public static void MoveZipToSongsFolder(string songsDirectory, string artist, string name, string charter, string zip, Action<string> status)
-        {
             name = FileCleanString(name);
             artist = FileCleanString(artist);
             charter = FileCleanString(charter);
-            UnarchiveZip(zip, Path.Combine(songsDirectory, artist + " - " + name + (!string.IsNullOrWhiteSpace(charter) ? " (" + charter + ")" : "")), status);
-            RemoveZip(zip, status);
+
+            string outputName = artist + " - " + name + (!string.IsNullOrWhiteSpace(charter) ? " (" + charter + ")" : "");
+
+            if (fileType == "ZIP" || fileType == "7Z" || fileType == "RAR")
+            {
+                MoveZipToSongsFolder(songsDirectory, outputName, file.FullName, status);
+            }
+            else
+            {
+                File.Move(file.FullName, Path.Combine(songsDirectory, outputName + file.Extension));
+            }
+        }
+
+        public static void MoveZipToSongsFolder(string songsDirectory, string outputName, string zip, Action<string> status)
+        {
+            UnarchiveZip(zip, Path.Combine(songsDirectory, outputName), status);
+            RemoveFile(zip, status);
         }
 
         private static string FileCleanString(string value)
@@ -32,10 +44,10 @@ namespace Chord.Core.Util
             return Regex.Replace(value, invalidRegStr, "_");
         }
 
-        public static void RemoveZip(string zip, Action<string> status)
+        public static void RemoveFile(string file, Action<string> status)
         {
             status.Invoke("Cleaning up...");
-            File.Delete(zip);
+            File.Delete(file);
         }
 
         public static void UnarchiveZip(string zip, string toDirectory, Action<string> status)

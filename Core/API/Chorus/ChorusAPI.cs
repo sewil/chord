@@ -14,7 +14,6 @@ namespace Chord.Core.API.Chorus
 
         public static SearchResult Search(int page, string query)
         {
-            query = Uri.EscapeDataString(query);
             string endpoint = "/search";
             var searchRequestData = new SearchRequestData
             {

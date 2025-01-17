@@ -21,22 +21,13 @@ namespace Chord.Core.Util
             if (url.StartsWith(GOOGLE_DRIVE_DOMAIN) || url.StartsWith(GOOGLE_DRIVE_DOMAIN2))
                 return DownloadFromDrive(url);
             else
-                return DownloadDirect(url, null);
+                return DownloadDirect(url);
         }
 
-        private static FileInfo DownloadDirect(string url, WebClient webClient)
+        private static FileInfo DownloadDirect(string url)
         {
-            // What if it's 7z?
-            string path = Path.Combine(Path.GetTempPath(), "chord-song.zip");
-            if (webClient == null)
-            {
-                using (webClient = new WebClient())
-                {
-                    webClient.DownloadFile(url, path);
-                    return new FileInfo(path);
-                }
-            }
-            else
+            string path = Path.Combine(Path.GetTempPath(), "chord-song.tmp");
+            using (var webClient = new WebClient())
             {
                 webClient.DownloadFile(url, path);
                 return new FileInfo(path);
@@ -63,7 +54,7 @@ namespace Chord.Core.Util
                     string tempLocalFile = Path.Combine(tempSongsDirectory, file.Name);
                     GoogleDriveUtil.DownloadFile(service, file.Id, tempLocalFile);
                 }
-                var path = Path.Combine(Path.GetTempPath(), "chord-song.zip");
+                var path = Path.Combine(Path.GetTempPath(), "chord-song.tmp");
                 if (File.Exists(path))
                 {
                     File.Delete(path);

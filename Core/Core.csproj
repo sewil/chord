@@ -78,6 +78,7 @@
     <Compile Include="API\RhythmVerse\Models\SearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\FileDownloader.cs" />
+    <Compile Include="Util\FileTypeDetector.cs" />
     <Compile Include="Util\GoogleDriveUtil.cs" />
     <Compile Include="Util\SongDownloader.cs" />
   </ItemGroup>
