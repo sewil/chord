@@ -138,7 +138,7 @@ namespace Chord
                 {
                     try
                     {
-                        IList<Song> songs = ChorusAPI.Search(0, searchQuery).songs;
+                        IList<Song> songs = ChorusAPI.Search(1, searchQuery).data;
                         Dispatcher.Invoke(() =>
                         {
                             RemoteSongList.Items.Clear();

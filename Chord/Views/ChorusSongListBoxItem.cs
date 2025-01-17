@@ -22,7 +22,7 @@ namespace Chord.Views
                 mainWindow.StatusLabel.Content = "Downloading...";
                 Task.Run(() =>
                 {
-                    string link = song.directLinks.archive ?? song.link;
+                    string link = string.Format("https://drive.google.com/file/d/{0}/view?usp=sharing", song.driveFileId);
                     bool downloadFailed = false;
                     try
                     {

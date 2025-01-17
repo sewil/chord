@@ -70,6 +70,8 @@
   <ItemGroup>
     <Compile Include="API\Chorus\ChorusAPI.cs" />
     <Compile Include="API\Chorus\Models\DirectLink.cs" />
+    <Compile Include="API\Chorus\Models\ErrorResponse.cs" />
+    <Compile Include="API\Chorus\Models\SearchRequestData.cs" />
     <Compile Include="API\Chorus\Models\SearchResult.cs" />
     <Compile Include="API\Chorus\Models\Song.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
