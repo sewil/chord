@@ -74,6 +74,8 @@
     <Compile Include="API\Chorus\Models\SearchRequestData.cs" />
     <Compile Include="API\Chorus\Models\SearchResult.cs" />
     <Compile Include="API\Chorus\Models\Song.cs" />
+    <Compile Include="API\RhythmVerse\RhythmVerseAPI.cs" />
+    <Compile Include="API\RhythmVerse\Models\SearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\FileDownloader.cs" />
     <Compile Include="Util\GoogleDriveUtil.cs" />

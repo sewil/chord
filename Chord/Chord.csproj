@@ -92,6 +92,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Views\RemoteSongContextMenu.cs" />
+    <Compile Include="Views\RhythmVerseSongListBoxItem.cs" />
     <Compile Include="Views\SongNodeTreeViewItem.cs" />
     <Compile Include="Views\SongNodeContextMenu.cs" />
     <Compile Include="Windows\CreditsWindow.xaml.cs">

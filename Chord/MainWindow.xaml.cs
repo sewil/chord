@@ -1,5 +1,6 @@
 ﻿using Chord.Core.API.Chorus;
 using Chord.Core.API.Chorus.Models;
+using Chord.Core.API.RhythmVerse;
 using Chord.Properties;
 using Chord.Views;
 using Chord.Windows;
@@ -42,7 +43,9 @@ namespace Chord
                 window.Show();
             };
             GamePathTextBox.Text = Settings.Default.GamePath;
-            APIComboBox.Items.Add(new APIComboBoxItem(APIType.Chorus, "Chorus") { IsSelected = true });
+            var selectedAPI = string.IsNullOrWhiteSpace(Settings.Default.SelectedAPI) ? "Chorus" : Settings.Default.SelectedAPI;
+            APIComboBox.Items.Add(new APIComboBoxItem(APIType.Chorus, "Chorus") { IsSelected = selectedAPI == "Chorus" });
+            APIComboBox.Items.Add(new APIComboBoxItem(APIType.RhythmVerse, "RhythmVerse") { IsSelected = selectedAPI == "RhythmVerse" });
             if (!string.IsNullOrWhiteSpace(Settings.Default.SongsDirectory))
             {
                 SongsDirectory.Text = Settings.Default.SongsDirectory;
@@ -119,9 +122,27 @@ namespace Chord
             selectedNode = ((SongNodeTreeViewItem)e.OriginalSource).Identifier;
         }
 
+        private APIType lastProvider;
+        private string lastQuery;
+        private int page;
+        private string GetSearchButtonText()
+        {
+            return SearchQueryTextBox.Text == lastQuery ? $"Search more" : "Search";
+        }
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             APIComboBoxItem selectedItem = (APIComboBoxItem)APIComboBox.SelectedItem;
+            var paginate = selectedItem.APIType == lastProvider && SearchQueryTextBox.Text == lastQuery;
+            if (paginate)
+            {
+                page++;
+            }
+            else
+            {
+                page = 1;
+                lastQuery = SearchQueryTextBox.Text;
+                lastProvider = selectedItem.APIType;
+            }
 
             if (selectedItem == null)
             {
@@ -138,10 +159,13 @@ namespace Chord
                 {
                     try
                     {
-                        IList<Song> songs = ChorusAPI.Search(1, searchQuery).data;
+                        IList<Song> songs = ChorusAPI.Search(page, searchQuery).data;
                         Dispatcher.Invoke(() =>
                         {
-                            RemoteSongList.Items.Clear();
+                            if (!paginate)
+                            {
+                                RemoteSongList.Items.Clear();
+                            }
                             foreach (Song song in songs)
                             {
                                 RemoteSongList.Items.Add(new ChorusSongListBoxItem(this, song));
@@ -157,7 +181,43 @@ namespace Chord
                         Dispatcher.Invoke(() =>
                         {
                             SearchButton.IsEnabled = true;
-                            SearchButton.Content = "Search";
+                            SearchButton.Content = GetSearchButtonText();
+                        });
+                    }
+                });
+            }
+            else if (selectedItem.APIType == APIType.RhythmVerse)
+            {
+                SearchButton.IsEnabled = false;
+                SearchButton.Content = "Searching...";
+                string searchQuery = SearchQueryTextBox.Text;
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        var songs = RhythmVerseAPI.Search(page, searchQuery).Data.Songs;
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (!paginate)
+                            {
+                                RemoteSongList.Items.Clear();
+                            }
+                            foreach (var song in songs)
+                            {
+                                RemoteSongList.Items.Add(new RhythmVerseSongListBoxItem(this, song));
+                            }
+                        });
+                    }
+                    catch (Exception exception)
+                    {
+                        Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
+                    }
+                    finally
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            SearchButton.IsEnabled = true;
+                            SearchButton.Content = GetSearchButtonText();
                         });
                     }
                 });
@@ -204,6 +264,22 @@ namespace Chord
         {
             Settings.Default.GamePath = GamePathTextBox.Text;
             Settings.Default.Save();
+        }
+
+        private void APIComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            APIComboBoxItem selectedItem = (APIComboBoxItem)APIComboBox.SelectedItem;
+
+            Settings.Default.SelectedAPI = selectedItem.Content.ToString();
+            Settings.Default.Save();
+        }
+
+        private void SearchQueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                SearchButton.Content = GetSearchButtonText();
+            });
         }
     }
 }

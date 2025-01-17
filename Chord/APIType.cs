@@ -2,6 +2,7 @@
 {
     enum APIType
     {
-        Chorus
+        Chorus,
+        RhythmVerse
     }
 }

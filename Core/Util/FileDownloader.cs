@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace Chord.Core.Util
 {
@@ -44,10 +45,11 @@ namespace Chord.Core.Util
 
         private static FileInfo DownloadFromDrive(string url)
         {
-            string folders = "drive/folders/";
-            if (url.IndexOf(folders) > 0)
+            string folders = @"drive\/(u\/\d+\/)?folders\/(.+)";
+            var match = Regex.Match(url, folders);
+            if (match.Success)
             {
-                int index = url.IndexOf(folders) + folders.Length;
+                int index = match.Groups[match.Groups.Count - 1].Index;
                 string folderId = url.Substring(index, url.Length - index);
                 DriveService service = GoogleDriveUtil.GetService();
                 var files = GoogleDriveUtil.ListFiles(service, folderId);

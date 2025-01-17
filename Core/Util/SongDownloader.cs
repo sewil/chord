@@ -64,7 +64,7 @@ namespace Chord.Core.Util
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = unrar ? "unrar.exe" : "winrar.exe",
+                        FileName = unrar ? "unrar" : "winrar",
                         Arguments = "x \"" + zip + "\" \"" + toDirectory + "\"",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,

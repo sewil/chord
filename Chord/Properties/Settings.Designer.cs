@@ -46,5 +46,17 @@ namespace Chord.Properties {
                 this["GamePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SelectedAPI {
+            get {
+                return ((string)(this["SelectedAPI"]));
+            }
+            set {
+                this["SelectedAPI"] = value;
+            }
+        }
     }
 }
