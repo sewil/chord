@@ -11,17 +11,27 @@ namespace Chord.Core.Util
 {
     public static class FileDownloader
     {
-        private const string GOOGLE_DRIVE_DOMAIN = "drive.google.com";
-        private const string GOOGLE_DRIVE_DOMAIN2 = "https://drive.google.com";
+        private const string GOOGLE_DRIVE_DOMAIN = @"(https?://)?drive\.google\.com";
 
-        // Normal example: FileDownloader.DownloadFileFromURLToPath( "http://example.com/file/download/link", @"C:\file.txt" );
-        // Drive example: FileDownloader.DownloadFileFromURLToPath( "http://drive.google.com/file/d/FILEID/view?usp=sharing", @"C:\file.txt" );
         public static FileInfo DownloadFile(string url)
         {
-            if (url.StartsWith(GOOGLE_DRIVE_DOMAIN) || url.StartsWith(GOOGLE_DRIVE_DOMAIN2))
+            if (Regex.IsMatch(url, GOOGLE_DRIVE_DOMAIN))
                 return DownloadFromDrive(url);
             else
                 return DownloadDirect(url);
+        }
+
+        public static string GetDriveUrl(string id, bool isFolder)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return null;
+            if (isFolder)
+            {
+                return string.Format("http://drive.google.com/drive/folders/{0}", id);
+            }
+            else
+            {
+                return string.Format("http://drive.google.com/file/d/{0}/view?usp=sharing", id);
+            }
         }
 
         private static FileInfo DownloadDirect(string url)

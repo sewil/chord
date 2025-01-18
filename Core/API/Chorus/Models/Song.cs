@@ -19,5 +19,6 @@ namespace Chord.Core.API.Chorus.Models
         public string genre;
         public string name;
         public string year;
+        public string parentFolderId;
     }
 }
