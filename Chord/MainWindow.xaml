@@ -44,6 +44,7 @@
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
             <Label Grid.Row="0">Provider:</Label>
             <ComboBox Grid.Row="1" Name="APIComboBox" SelectionChanged="APIComboBox_SelectionChanged"/>
@@ -51,6 +52,7 @@
             <TextBox Name="SearchQueryTextBox" KeyUp="SearchQueryTextBox_KeyUp" TextChanged="SearchQueryTextBox_TextChanged" Grid.Row="3"></TextBox>
             <Button Name="SearchButton" Click="SearchButton_Click" Grid.Row="4">Search</Button>
             <ListBox Grid.Row="5" Name="RemoteSongList"></ListBox>
+            <Button Name="LoadMoreButton" Click="LoadMoreButton_Click" Grid.Row="6" Visibility="Collapsed">Load more</Button>
         </Grid>
         <Grid Grid.Row="2" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>

@@ -122,17 +122,15 @@ namespace Chord
             selectedNode = ((SongNodeTreeViewItem)e.OriginalSource).Identifier;
         }
 
-        private APIType lastProvider;
-        private string lastQuery;
         private int page;
-        private string GetSearchButtonText()
-        {
-            return SearchQueryTextBox.Text == lastQuery ? $"Search more" : "Search";
-        }
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
+            LoadData(false);
+        }
+
+        private void LoadData(bool paginate)
+        {
             APIComboBoxItem selectedItem = (APIComboBoxItem)APIComboBox.SelectedItem;
-            var paginate = selectedItem.APIType == lastProvider && SearchQueryTextBox.Text == lastQuery;
             if (paginate)
             {
                 page++;
@@ -140,8 +138,6 @@ namespace Chord
             else
             {
                 page = 1;
-                lastQuery = SearchQueryTextBox.Text;
-                lastProvider = selectedItem.APIType;
             }
 
             if (selectedItem == null)
@@ -150,16 +146,24 @@ namespace Chord
                 return;
             }
 
-            if (selectedItem.APIType == APIType.Chorus)
+            SearchButton.IsEnabled = false;
+            LoadMoreButton.IsEnabled = false;
+            string searchQuery = SearchQueryTextBox.Text;
+            if (paginate)
             {
-                SearchButton.IsEnabled = false;
+                LoadMoreButton.Content = "Loading...";
+            }
+            else
+            {
                 SearchButton.Content = "Searching...";
-                string searchQuery = SearchQueryTextBox.Text;
-                Task.Run(() =>
+            }
+            Task.Run(() =>
+            {
+                try
                 {
-                    try
+                    if (selectedItem.APIType == APIType.Chorus)
                     {
-                        IList<Song> songs = ChorusAPI.Search(page, searchQuery).data;
+                        var songs = ChorusAPI.Search(page, searchQuery).data;
                         Dispatcher.Invoke(() =>
                         {
                             if (!paginate)
@@ -172,28 +176,7 @@ namespace Chord
                             }
                         });
                     }
-                    catch (Exception exception)
-                    {
-                        Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-                    }
-                    finally
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            SearchButton.IsEnabled = true;
-                            SearchButton.Content = GetSearchButtonText();
-                        });
-                    }
-                });
-            }
-            else if (selectedItem.APIType == APIType.RhythmVerse)
-            {
-                SearchButton.IsEnabled = false;
-                SearchButton.Content = "Searching...";
-                string searchQuery = SearchQueryTextBox.Text;
-                Task.Run(() =>
-                {
-                    try
+                    else
                     {
                         var songs = RhythmVerseAPI.Search(page, searchQuery).Data.Songs;
                         Dispatcher.Invoke(() =>
@@ -208,20 +191,31 @@ namespace Chord
                             }
                         });
                     }
-                    catch (Exception exception)
+                    Dispatcher.Invoke(() =>
                     {
-                        Dispatcher.Invoke(() => MessageBox.Show(exception.Message));
-                    }
-                    finally
+                        LoadMoreButton.Visibility = Visibility.Visible;
+                        LoadMoreButton.IsEnabled = true;
+                    });
+                }
+                catch (Exception exception)
+                {
+                    page = Math.Max(page - 1, 1);
+                    Dispatcher.Invoke(() =>
                     {
-                        Dispatcher.Invoke(() =>
-                        {
-                            SearchButton.IsEnabled = true;
-                            SearchButton.Content = GetSearchButtonText();
-                        });
-                    }
-                });
-            }
+                        MessageBox.Show(exception.Message);
+                        LoadMoreButton.IsEnabled = false;
+                    });
+                }
+                finally
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        SearchButton.IsEnabled = true;
+                        SearchButton.Content = "Search";
+                        LoadMoreButton.Content = "Load more";
+                    });
+                }
+            });
         }
 
         private void SearchQueryTextBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -276,10 +270,11 @@ namespace Chord
 
         private void SearchQueryTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                SearchButton.Content = GetSearchButtonText();
-            });
+        }
+
+        private void LoadMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadData(true);
         }
     }
 }
