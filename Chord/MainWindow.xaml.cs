@@ -42,11 +42,48 @@ namespace Chord
                 CreditsWindow window = new CreditsWindow();
                 window.Show();
             };
-            GamePathTextBox.Text = Settings.Default.GamePath;
             var selectedAPI = string.IsNullOrWhiteSpace(Settings.Default.SelectedAPI) ? "Chorus" : Settings.Default.SelectedAPI;
             APIComboBox.Items.Add(new APIComboBoxItem(APIType.Chorus, "Chorus") { IsSelected = selectedAPI == "Chorus" });
             APIComboBox.Items.Add(new APIComboBoxItem(APIType.RhythmVerse, "RhythmVerse") { IsSelected = selectedAPI == "RhythmVerse" });
-            if (!string.IsNullOrWhiteSpace(Settings.Default.SongsDirectory))
+            LocateSongsDirectory();
+            UpdateSongsDirectory();
+            LocateGamePath();
+            Dispatcher.Invoke(() =>
+            {
+                GamePathTextBox.Text = Settings.Default.GamePath;
+            });
+        }
+
+        private void LocateGamePath()
+        {
+            if (string.IsNullOrWhiteSpace(Settings.Default.GamePath))
+            {
+                var gamePath = Path.Combine("C:\\", "Program Files", "Clone Hero", "Clone Hero.exe");
+                if (File.Exists(gamePath))
+                {
+                    Settings.Default.GamePath = gamePath;
+                    Settings.Default.Save();
+                }
+            }
+        }
+
+        private void LocateSongsDirectory()
+        {
+            if (string.IsNullOrWhiteSpace(Settings.Default.SongsDirectory))
+            {
+                string songsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Clone Hero", "Songs");
+                if (Directory.Exists(songsDirectory))
+                {
+                    Settings.Default.SongsDirectory = songsDirectory;
+                    Settings.Default.Save();
+                }
+            }
+        }
+
+        private void UpdateSongsDirectory()
+        {
+            var songsDirectory = Settings.Default.SongsDirectory;
+            if (!string.IsNullOrWhiteSpace(songsDirectory) && Directory.Exists(songsDirectory))
             {
                 SongsDirectory.Text = Settings.Default.SongsDirectory;
                 Task.Run(() =>
