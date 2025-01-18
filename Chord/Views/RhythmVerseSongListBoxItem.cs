@@ -1,4 +1,5 @@
-﻿using Chord.Core.API.RhythmVerse.Models;
+﻿using Chord.Core.API.RhythmVerse;
+using Chord.Core.API.RhythmVerse.Models;
 using Chord.Core.Util;
 using System;
 using System.ComponentModel;
@@ -23,6 +24,10 @@ namespace Chord.Views
                 Task.Run(() =>
                 {
                     string link = song.File.DownloadUrl;
+                    if (link.StartsWith("/download_file"))
+                    {
+                        link = RhythmVerseAPI.HOST_URL + link;
+                    }
                     bool downloadFailed = false;
                     try
                     {

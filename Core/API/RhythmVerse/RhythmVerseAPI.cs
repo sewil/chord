@@ -13,7 +13,8 @@ namespace Chord.Core.API.RhythmVerse
 {
     public static class RhythmVerseAPI
     {
-        private const string API_URL = "https://rhythmverse.co/api";
+        public const string HOST_URL = "https://rhythmverse.co";
+        private const string API_URL = HOST_URL + "/api";
         public static SearchResult Search(int page, string query)
         {
             var data = new NameValueCollection();
