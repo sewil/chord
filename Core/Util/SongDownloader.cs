@@ -24,12 +24,38 @@ namespace Chord.Core.Util
             {
                 MoveZipToSongsFolder(songsDirectory, outputName, file.FullName, status);
             }
+            else if (fileType == "SNGPKG")
+            {
+                string outDir = Path.Combine(songsDirectory, outputName);
+                DecodeSngFile(file.FullName, outDir, status);
+            }
             else
             {
                 File.Move(file.FullName, Path.Combine(songsDirectory, outputName + file.Extension));
             }
         }
-
+        public static void DecodeSngFile(string fileName, string outDir, Action<string> status)
+        {
+            var tmpOut = Path.Combine(fileName + ".tmp");
+            Directory.CreateDirectory(tmpOut);
+            File.Move(fileName, Path.Combine(tmpOut, Path.GetFileName(fileName)));
+            Process process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "SngCli.exe",
+                    Arguments = $"decode -i \"{tmpOut}\" -o \"{tmpOut}\"",
+                    UseShellExecute = true,
+                    RedirectStandardOutput = false,
+                    CreateNoWindow = true,
+                }
+            };
+            process.Start();
+            process.WaitForExit();
+            Directory.Move(Path.Combine(tmpOut, Path.GetFileNameWithoutExtension(fileName)), outDir);
+            Directory.Delete(tmpOut, true);
+            status.Invoke("Cleaning up...");
+        }
         public static void MoveZipToSongsFolder(string songsDirectory, string outputName, string zip, Action<string> status)
         {
             UnarchiveZip(zip, Path.Combine(songsDirectory, outputName), status);
