@@ -40,6 +40,11 @@ namespace Chord.Core.Util
             using (var webClient = new WebClient())
             {
                 webClient.DownloadFile(url, path);
+                var contentType = webClient.ResponseHeaders[HttpResponseHeader.ContentType];
+                if (contentType == "text/html; charset=utf-8")
+                {
+                    throw new WebException("Invalid download content type.");
+                }
                 return new FileInfo(path);
             }
         }
