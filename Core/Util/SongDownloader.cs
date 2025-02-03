@@ -9,7 +9,7 @@ namespace Chord.Core.Util
 {
     public static class SongDownloader
     {
-        public static void DownloadSong(string songsDirectory, string link, string artist, string name, string charter, Action<string> status)
+        public static void DownloadSong(string songsDirectory, string link, string artist, string name, string charter, Action<string> status, Action<FileInfo, string, Action<string>> conDownloadHandler)
         {
             FileInfo file = FileDownloader.DownloadFile(link);
             var fileType = FileTypeDetector.DetectFileType(file.FullName);
@@ -28,6 +28,15 @@ namespace Chord.Core.Util
             {
                 string outDir = Path.Combine(songsDirectory, outputName);
                 DecodeSngFile(file.FullName, outDir, status);
+            }
+            else if (fileType == "CON")
+            {
+                if (conDownloadHandler == null)
+                {
+                    throw new Exception("Unhandled CON file!");
+                }
+                string outDir = Path.Combine(songsDirectory, outputName);
+                conDownloadHandler(file, outDir, status);
             }
             else
             {

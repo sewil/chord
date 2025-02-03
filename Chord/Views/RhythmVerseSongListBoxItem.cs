@@ -1,6 +1,7 @@
 ﻿using Chord.Core.API.RhythmVerse;
 using Chord.Core.API.RhythmVerse.Models;
 using Chord.Core.Util;
+using Nautilus;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -34,6 +35,9 @@ namespace Chord.Views
                         SongDownloader.DownloadSong(songsDirectory, link, song.Data.Artist, song.Data.Title, song.File.User, (status) =>
                         {
                             Dispatcher.Invoke(() => mainWindow.StatusLabel.Content = status);
+                        }, (fileIn, outDir, status) => {
+                            var converter = new CONConverter(status);
+                            converter.Convert(fileIn.FullName, outDir);
                         });
                     }
                     catch (Win32Exception exception)

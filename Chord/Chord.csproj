@@ -43,6 +43,9 @@
     <ApplicationIcon>guitar-picks-256x256.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Bass.Net">
+      <HintPath>..\Nautilus\bin\Bass.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Google.Apis, Version=1.35.2.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.1.35.2\lib\net45\Google.Apis.dll</HintPath>
     </Reference>
@@ -64,6 +67,13 @@
     <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.5.2\lib\net20\INIFileParser.dll</HintPath>
     </Reference>
+    <Reference Include="NAudio, Version=1.7.2.19, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Nautilus\bin\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NautilusFREE">
+      <HintPath>..\Nautilus\bin\NautilusFREE.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -71,8 +81,10 @@
       <HintPath>..\packages\Newtonsoft.Json.Schema.3.0.14\lib\net45\Newtonsoft.Json.Schema.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -91,6 +103,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CONConverter.cs" />
     <Compile Include="Views\RemoteSongContextMenu.cs" />
     <Compile Include="Views\RhythmVerseSongListBoxItem.cs" />
     <Compile Include="Views\SongNodeTreeViewItem.cs" />
@@ -159,6 +172,10 @@
       <Project>{23485C00-8D58-462A-94F8-331AD3AF6DFF}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Nautilus\Nautilus\Nautilus.csproj">
+      <Project>{e72dc7f9-6786-4b1b-879b-2f81026fe688}</Project>
+      <Name>Nautilus</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\github-logo.svg" />
@@ -167,4 +184,10 @@
     <Resource Include="guitar-picks-256x256.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+      mkdir "$(ProjectDir)\bin\$(Configuration)\bin" 
+      xcopy /y /e "$(ProjectDir)\..\Nautilus\bin" "$(ProjectDir)\bin\$(Configuration)\bin"
+    </PreBuildEvent>
+  </PropertyGroup>
 </Project>
