@@ -1,0 +1,3 @@
+[submodule "Nautilus"]
+	path = Nautilus
+	url = https://github.com/sewil/Nautilus
