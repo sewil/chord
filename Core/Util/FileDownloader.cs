@@ -15,10 +15,10 @@ namespace Chord.Core.Util
         private const string GOOGLE_DRIVE_DOMAIN = @"(https?://)?drive\.google\.com";
         private const string MEDIAFIRE_DOMAIN = @"(https?://)?(www\.)?mediafire\.com";
 
-        public static FileInfo DownloadFile(string url)
+        public static FileInfo DownloadFile(string url, Action<string> status)
         {
             if (Regex.IsMatch(url, GOOGLE_DRIVE_DOMAIN))
-                return DownloadFromDrive(url);
+                return DownloadFromDrive(url, status);
             else if (Regex.IsMatch(url, MEDIAFIRE_DOMAIN))
                 return DownloadMediafire(url);
             else
@@ -66,7 +66,7 @@ namespace Chord.Core.Util
             }
         }
 
-        private static FileInfo DownloadFromDrive(string url)
+        private static FileInfo DownloadFromDrive(string url, Action<string> status)
         {
             string folders = @"drive\/(u\/\d+\/)?folders\/(.+)";
             var match = Regex.Match(url, folders);
@@ -84,7 +84,7 @@ namespace Chord.Core.Util
                 foreach (var file in files)
                 {
                     string tempLocalFile = Path.Combine(tempSongsDirectory, file.Name);
-                    GoogleDriveUtil.DownloadFile(service, file.Id, tempLocalFile);
+                    GoogleDriveUtil.DownloadFile(service, file.Id, tempLocalFile, status);
                 }
                 var path = Path.Combine(Path.GetTempPath(), "chord-song.tmp");
                 if (File.Exists(path))
@@ -101,7 +101,7 @@ namespace Chord.Core.Util
                 var service = GoogleDriveUtil.GetService();
                 var file = GoogleDriveUtil.GetFile(service, fileId, out FilesResource.GetRequest getRequest);
                 var path = Path.Combine(Path.GetTempPath(), "chord-song" + Path.GetExtension(file.Name));
-                GoogleDriveUtil.DownloadFile(getRequest, path);
+                GoogleDriveUtil.DownloadFile(getRequest, path, status);
                 return new FileInfo(path);
             }
         }

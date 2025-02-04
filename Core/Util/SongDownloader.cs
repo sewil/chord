@@ -11,7 +11,7 @@ namespace Chord.Core.Util
     {
         public static void DownloadSong(string songsDirectory, string link, string artist, string name, string charter, Action<string> status)
         {
-            FileInfo file = FileDownloader.DownloadFile(link);
+            FileInfo file = FileDownloader.DownloadFile(link, status);
             var fileType = FileTypeDetector.DetectFileType(file.FullName);
 
             name = FileCleanString(name);

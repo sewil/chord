@@ -2,11 +2,11 @@
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
-using Google.Apis.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System;
+using System.Net;
 
 namespace Chord.Core.Util
 {
@@ -53,12 +53,12 @@ namespace Chord.Core.Util
             var file = getRequest.Execute();
             return file;
         }
-        public static void DownloadFile(Google.Apis.Drive.v3.DriveService service, string fileId, string saveTo)
+        public static void DownloadFile(Google.Apis.Drive.v3.DriveService service, string fileId, string saveTo, Action<string> status)
         {
             var getRequest = service.Files.Get(fileId);
-            DownloadFile(getRequest, saveTo);
+            DownloadFile(getRequest, saveTo, status);
         }
-        public static void DownloadFile(FilesResource.GetRequest getRequest, string saveTo)
+        public static void DownloadFile(FilesResource.GetRequest getRequest, string saveTo, Action<string> status)
         {
             var stream = new System.IO.MemoryStream();
 
@@ -71,19 +71,18 @@ namespace Chord.Core.Util
                 {
                     case Google.Apis.Download.DownloadStatus.Downloading:
                         {
-                            Console.WriteLine(progress.BytesDownloaded);
+                            status?.Invoke($"Downloading... {progress.BytesDownloaded}/{getRequest.MediaDownloader.ChunkSize}");
                             break;
                         }
                     case Google.Apis.Download.DownloadStatus.Completed:
                         {
-                            Console.WriteLine("Download complete.");
+                            status?.Invoke("Download complete.");
                             SaveStream(stream, saveTo);
                             break;
                         }
                     case Google.Apis.Download.DownloadStatus.Failed:
                         {
-                            Console.WriteLine("Download failed.");
-                            break;
+                            throw progress.Exception ?? throw new WebException("Download failed.");
                         }
                 }
             };
