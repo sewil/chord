@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
+//using System.Windows.Forms;
 using Un4seen.Bass;
 using Nautilus;
 using Nautilus.x360;
@@ -425,7 +425,7 @@ namespace Chord
             public bool WriteINIFile(string output_folder, bool addHopoThreshold)
             {
                 var ini = output_folder + "\\song.ini";
-                var ps = Application.StartupPath + "\\bin\\loading_phrase.txt";
+                var ps = "\\bin\\loading_phrase.txt";
 
                 if (File.Exists(ps))
                 {

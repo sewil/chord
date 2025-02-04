@@ -29,7 +29,7 @@ namespace Chord.Views
                         SongDownloader.DownloadSong(songsDirectory, link, song.artist, song.name, song.charter, (status) =>
                         {
                             Dispatcher.Invoke(() => mainWindow.StatusLabel.Content = status);
-                        }, null);
+                        });
                     }
                     catch (Win32Exception exception)
                     {
