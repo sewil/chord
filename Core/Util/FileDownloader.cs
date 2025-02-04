@@ -6,17 +6,21 @@ using System.IO.Compression;
 using System.Net;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace Chord.Core.Util
 {
     public static class FileDownloader
     {
         private const string GOOGLE_DRIVE_DOMAIN = @"(https?://)?drive\.google\.com";
+        private const string MEDIAFIRE_DOMAIN = @"(https?://)?(www\.)?mediafire\.com";
 
         public static FileInfo DownloadFile(string url)
         {
             if (Regex.IsMatch(url, GOOGLE_DRIVE_DOMAIN))
                 return DownloadFromDrive(url);
+            else if (Regex.IsMatch(url, MEDIAFIRE_DOMAIN))
+                return DownloadMediafire(url);
             else
                 return DownloadDirect(url);
         }
@@ -34,7 +38,20 @@ namespace Chord.Core.Util
             }
         }
 
-        private static FileInfo DownloadDirect(string url)
+        public static FileInfo DownloadMediafire(string url)
+        {
+            var htmlFile = new FileInfo(Path.Combine(Path.GetTempPath(), "chord-song.tmp"));
+            var client = new MediafireSDK.DataClient();
+            client.DownloadFile(url, htmlFile.Directory.FullName, htmlFile.FullName).Wait();
+            var html = File.ReadAllText(htmlFile.FullName);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            var downloadA = doc.GetElementbyId("downloadButton");
+            var downloadLink = downloadA.GetAttributeValue("href", "");
+            return DownloadDirect(downloadLink);
+        }
+
+        public static FileInfo DownloadDirect(string url)
         {
             string path = Path.Combine(Path.GetTempPath(), "chord-song.tmp");
             using (var webClient = new WebClient())
