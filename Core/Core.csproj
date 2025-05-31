@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Bass.Net">
-      <HintPath>..\Nautilus\bin\Bass.Net.dll</HintPath>
+      <HintPath>..\Nautilus\Nautilus\Binaries\Bass.Net.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.1.25.0\lib\net45\Google.Apis.dll</HintPath>
@@ -60,7 +60,7 @@
       <HintPath>..\packages\DeQmaTech.MediafireSDK.2.0.9\lib\net452\MediafireSDK.dll</HintPath>
     </Reference>
     <Reference Include="NAudio">
-      <HintPath>..\Nautilus\bin\NAudio.dll</HintPath>
+      <HintPath>..\Nautilus\Nautilus\Binaries\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>

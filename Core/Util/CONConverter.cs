@@ -30,132 +30,116 @@ namespace Chord
         }
         public void Convert(string file, string outDir)
         {
-            try
+            if (VariousFunctions.ReadFileType(file) != XboxFileType.STFS) return;
+            Song.NewSong();
+            Song.ReplaceGenreWithSub = false;
+            if (!Directory.Exists(outDir))
             {
-                if (VariousFunctions.ReadFileType(file) != XboxFileType.STFS) return;
-                Song.NewSong();
-                Song.ReplaceGenreWithSub = false;
-                if (!Directory.Exists(outDir))
+                Directory.CreateDirectory(outDir);
+            }
+            if (!outDir.EndsWith("\\")) outDir += "\\";
+
+            Parser.ExtractDTA(file);
+            Parser.ReadDTA(Parser.DTA);
+            if (Parser.Songs.Count > 1)
+            {
+                Log("File " + Path.GetFileName(file) + " is a pack, try dePACKing first, skipping...");
+                return;
+            }
+            if (!Parser.Songs.Any())
+            {
+                Log("There was an error processing the songs.dta file");
+                return;
+            }
+            uint TitleID;
+            var xCON = new STFSPackage(file);
+            if (xCON.ParseSuccess)
+            {
+                TitleID = xCON.Header.TitleID;
+            }
+            else
+            {
+                TitleID = 0;
+            }
+            xCON.CloseIO();
+            if (loadDTA(TitleID))
+            {
+                Log("Loaded and processed songs.dta file for song successfully");
+                Log("Song is " + Song.Artist + " - " + Song.Name);
+            }
+            else
+            {
+                return;
+            }
+
+            var internal_name = Parser.Songs[0].InternalName;
+
+            var xPackage = new STFSPackage(file);
+            if (!xPackage.ParseSuccess)
+            {
+                Log("Failed to parse '" + Path.GetFileName(file) + "'");
+                Log("Skipping this file");
+                return;
+            }
+            var xArt = xPackage.GetFile("songs/" + internal_name + "/gen/" + internal_name + "_keep.png_xbox");
+            if (xArt != null)
+            {
+                var newart = Path.Combine(outDir, "album.png_xbox");
+                if (xArt.ExtractToFile(newart))
                 {
-                    Directory.CreateDirectory(outDir);
+                    Log("Extracted album art file " + internal_name + "_keep.png_xbox successfully");
+                    fromXbox(newart);
                 }
-                if (!outDir.EndsWith("\\")) outDir += "\\";
-
-                try
+                else
                 {
-                    Parser.ExtractDTA(file);
-                    Parser.ReadDTA(Parser.DTA);
-                    if (Parser.Songs.Count > 1)
-                    {
-                        Log("File " + Path.GetFileName(file) + " is a pack, try dePACKing first, skipping...");
-                        return;
-                    }
-                    if (!Parser.Songs.Any())
-                    {
-                        Log("There was an error processing the songs.dta file");
-                        return;
-                    }
-                    uint TitleID;
-                    var xCON = new STFSPackage(file);
-                    if (xCON.ParseSuccess)
-                    {
-                        TitleID = xCON.Header.TitleID;
-                    }
-                    else
-                    {
-                        TitleID = 0;
-                    }
-                    xCON.CloseIO();
-                    if (loadDTA(TitleID))
-                    {
-                        Log("Loaded and processed songs.dta file for song successfully");
-                        Log("Song is " + Song.Artist + " - " + Song.Name);
-                    }
-                    else
-                    {
-                        return;
-                    }
-
-                    var internal_name = Parser.Songs[0].InternalName;
-
-                    var xPackage = new STFSPackage(file);
-                    if (!xPackage.ParseSuccess)
-                    {
-                        Log("Failed to parse '" + Path.GetFileName(file) + "'");
-                        Log("Skipping this file");
-                        return;
-                    }
-                    var xArt = xPackage.GetFile("songs/" + internal_name + "/gen/" + internal_name + "_keep.png_xbox");
-                    if (xArt != null)
-                    {
-                        var newart = Path.Combine(outDir, "album.png_xbox");
-                        if (xArt.ExtractToFile(newart))
-                        {
-                            Log("Extracted album art file " + internal_name + "_keep.png_xbox successfully");
-                            fromXbox(newart);
-                        }
-                        else
-                        {
-                            Log("There was a problem extracting the album art file");
-                        }
-                    }
-                    else
-                    {
-                        Log("WARNING: Did not find album art file in that CON file");
-                    }
-                    var xMIDI = xPackage.GetFile("songs/" + internal_name + "/" + internal_name + ".mid");
-                    if (xMIDI != null)
-                    {
-                        var newmidi = Path.Combine(outDir, "notes.mid");
-                        if (xMIDI.ExtractToFile(newmidi))
-                        {
-                            Log("Extracted MIDI file " + internal_name + ".mid successfully");
-                            ProcessMidi(newmidi);
-                        }
-                        else
-                        {
-                            Log("There was a problem extracting the MIDI file");
-                            Log("Skipping this song...");
-                            xPackage.CloseIO();
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        Log("ERROR: Did not find a MIDI file in that CON file!");
-                        Log("Skipping this song...");
-                        xPackage.CloseIO();
-                        return;
-                    }
-                    var xMOGG = xPackage.GetFile("songs/" + internal_name + "/" + internal_name + ".mogg");
-                    if (xMOGG != null)
-                    {
-                        var newMogg = Path.Combine(outDir, internal_name + ".mogg");
-                        xPackage.CloseIO();
-                        SeparateAudio(file, newMogg, outDir);
-                    }
-                    else
-                    {
-                        Log("ERROR: Did not find an audio file in that CON file!");
-                        Log("Skipping this song...");
-                        xPackage.CloseIO();
-                        return;
-                    }
+                    Log("There was a problem extracting the album art file");
+                }
+            }
+            else
+            {
+                Log("WARNING: Did not find album art file in that CON file");
+            }
+            var xMIDI = xPackage.GetFile("songs/" + internal_name + "/" + internal_name + ".mid");
+            if (xMIDI != null)
+            {
+                var newmidi = Path.Combine(outDir, "notes.mid");
+                if (xMIDI.ExtractToFile(newmidi))
+                {
+                    Log("Extracted MIDI file " + internal_name + ".mid successfully");
+                    ProcessMidi(newmidi);
+                }
+                else
+                {
+                    Log("There was a problem extracting the MIDI file");
+                    Log("Skipping this song...");
                     xPackage.CloseIO();
-
-                    Song.WriteINIFile(outDir, false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("There was an error: " + ex.Message);
-                    Console.WriteLine("Attempting to continue with the next file");
+                    return;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine("There was a problem accessing that file");
-                Console.WriteLine("The error says: " + ex.Message);
+                Log("ERROR: Did not find a MIDI file in that CON file!");
+                Log("Skipping this song...");
+                xPackage.CloseIO();
+                return;
             }
+            var xMOGG = xPackage.GetFile("songs/" + internal_name + "/" + internal_name + ".mogg");
+            if (xMOGG != null)
+            {
+                var newMogg = Path.Combine(outDir, internal_name + ".mogg");
+                xPackage.CloseIO();
+                SeparateAudio(file, newMogg, outDir);
+            }
+            else
+            {
+                Log("ERROR: Did not find an audio file in that CON file!");
+                Log("Skipping this song...");
+                xPackage.CloseIO();
+                return;
+            }
+            xPackage.CloseIO();
+
+            Song.WriteINIFile(outDir, false);
         }
 
         private void SeparateAudio(string CON, string mogg, string folder)
@@ -425,7 +409,7 @@ namespace Chord
             public bool WriteINIFile(string output_folder, bool addHopoThreshold)
             {
                 var ini = output_folder + "\\song.ini";
-                var ps = "\\bin\\loading_phrase.txt";
+                var ps = "\\loading_phrase.txt";
 
                 if (File.Exists(ps))
                 {

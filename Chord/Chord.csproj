@@ -148,8 +148,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
-      mkdir "$(ProjectDir)\bin\$(Configuration)\bin" 
-      xcopy /y /e "$(ProjectDir)\..\Nautilus\bin" "$(ProjectDir)\bin\$(Configuration)\bin"
+      xcopy /y /e "$(ProjectDir)\..\Nautilus\Nautilus\Binaries" "$(ProjectDir)\bin\$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
 </Project>
